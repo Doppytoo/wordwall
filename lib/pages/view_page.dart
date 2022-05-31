@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 
 import 'package:flutter_scatter/flutter_scatter.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 class ViewPage extends StatefulWidget {
   const ViewPage({Key? key}) : super(key: key);
@@ -20,6 +19,7 @@ class _ViewPageState extends State<ViewPage> {
 
   bool initialized = false;
   Map<String, num> _words = {};
+  List<Widget> _wordWidgets = [];
 
   @override
   void initState() {
@@ -62,6 +62,18 @@ class _ViewPageState extends State<ViewPage> {
       setState(() {
         _words = ((event.snapshot.value ?? {}) as Map)
             .map((key, value) => MapEntry(key as String, value as num));
+        _wordWidgets = (_words.entries.toList()
+              ..sort(
+                (e1, e2) => e1.value.compareTo(e2.value),
+              ))
+            .map((e) => Text(
+                  e.key,
+                  style: TextStyle(
+                    fontSize:
+                        (e.value / (_words.values.toList()..sort()).first) * 10,
+                  ),
+                ))
+            .toList();
       });
     });
   }
@@ -70,29 +82,32 @@ class _ViewPageState extends State<ViewPage> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       child: SafeArea(
-        child: Center(
-          child: FittedBox(
-            child: Scatter(
-                fillGaps: true,
-                delegate: ArchimedeanSpiralScatterDelegate(
-                    ratio: MediaQuery.of(context).size.width /
-                        MediaQuery.of(context).size.height),
-                children: (_words.entries.toList()
-                      ..sort(
-                        (e1, e2) => e1.value.compareTo(e2.value),
-                      ))
-                    .map((e) => SizedBox(
-                          width: e.value /
-                              (_words.values.toList()..sort()).first *
-                              0.1 *
-                              MediaQuery.of(context).size.width,
-                          child: FittedBox(
-                            child: Text(
-                              e.key,
-                            ),
-                          ),
-                        ))
-                    .toList()),
+        child: WordCloud(_wordWidgets),
+      ),
+    );
+  }
+}
+
+class WordCloud extends StatelessWidget {
+  final List<Widget> widgets;
+
+  WordCloud(this.widgets);
+
+  @override
+  Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final ratio = screenSize.width / screenSize.height;
+
+    return Center(
+      child: SizedBox(
+        width: screenSize.width,
+        height: screenSize.height,
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: Scatter(
+            fillGaps: true,
+            delegate: ArchimedeanSpiralScatterDelegate(ratio: ratio),
+            children: widgets,
           ),
         ),
       ),

@@ -1,11 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 
-import 'package:flutter_scatter/flutter_scatter.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 class InputPage extends StatelessWidget {
   InputPage({Key? key}) : super(key: key);
